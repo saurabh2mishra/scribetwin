@@ -14,4 +14,13 @@ wheels/
 env/
 venv/
 ENV/
-env.bak/    
+env.bak/
+.DS_Store
+.idea/
+.vs/
+*.log
+*.sqlite3
+*.db
+*.bak
+*.swp
+*.swo
