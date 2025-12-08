@@ -1,0 +1,15 @@
+[project]
+name = "scribetwin"
+version = "0.1.0"
+description = "An AI personalized writer that write to match your tone"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "bs4>=0.0.2",
+    "dotenv>=0.9.9",
+    "fastapi[standard]>=0.118.3",
+    "google-adk>=1.18.0",
+    "grpcio==1.76.0",
+    "python-multipart>=0.0.20",
+    "sentence-transformers>=5.1.2",
+]

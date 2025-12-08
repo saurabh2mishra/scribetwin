@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScribeTwin</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Left Panel: Controls & Pipeline -->
+        <div class="left-panel">
+            <div class="header">
+                <h1>ScribeTwin</h1>
+                <p class="subtitle">AI-powered blog generation with style matching</p>
+            </div>
+
+            <!-- Input Section -->
+            <div class="input-section">
+                <div class="form-group">
+                    <label for="rss-feed">RSS Feed URL OF AUTHOR</label>
+                    <input 
+                        type="text" 
+                        id="rss-feed" 
+                        value="https://api.rss2json.com/v1/api.json?rss_url=https://medium.com/feed/@saurabh2.mishra"
+                        placeholder="Enter RSS feed URL"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="topic">BLOG TOPIC</label>
+                    <textarea 
+                        id="topic" 
+                        rows="3" 
+                        placeholder="Enter your blog topic here... (e.g., RSA Cryptography and its importance in modern security)"
+                    ></textarea>
+                </div>
+
+                <button id="generate-btn" class="generate-btn">
+                    <span class="btn-text">Generate Blog</span>
+                    <span class="btn-loader" style="display: none;"></span>
+                </button>
+            </div>
+
+            <!-- Enhanced Pipeline Visualization -->
+            <div class="pipeline-section">
+                <h2> Agent Execution Flow</h2>
+                <div class="pipeline">
+                    <div class="pipeline-step" data-stage="outline">
+                        <div class="step-icon-wrapper">
+                            <div class="step-icon">📝</div>
+                            <div class="step-glow"></div>
+                        </div>
+                        <div class="step-content">
+                            <div class="step-name">Outline Agent</div>
+                            <div class="step-description">Creating structure</div>
+                            <div class="step-status">Waiting</div>
+                            <div class="step-progress">
+                                <div class="progress-bar"></div>
+                            </div>
+                        </div>
+                        <div class="step-checkmark">✓</div>
+                    </div>
+                    
+                    <div class="pipeline-connector">
+                        <div class="connector-line"></div>
+                        <div class="connector-dot"></div>
+                    </div>
+                    
+                    <div class="pipeline-step" data-stage="writer">
+                        <div class="step-icon-wrapper">
+                            <div class="step-icon">✍️</div>
+                            <div class="step-glow"></div>
+                        </div>
+                        <div class="step-content">
+                            <div class="step-name">Writer Agent</div>
+                            <div class="step-description">Crafting content</div>
+                            <div class="step-status">Waiting</div>
+                            <div class="step-progress">
+                                <div class="progress-bar"></div>
+                            </div>
+                        </div>
+                        <div class="step-checkmark">✓</div>
+                    </div>
+                    
+                    <div class="pipeline-connector">
+                        <div class="connector-line"></div>
+                        <div class="connector-dot"></div>
+                    </div>
+                    
+                    <div class="pipeline-step" data-stage="style">
+                        <div class="step-icon-wrapper">
+                            <div class="step-icon">👨‍🎨</div>
+                            <div class="step-glow"></div>
+                        </div>
+                        <div class="step-content">
+                            <div class="step-name">Style Agent</div>
+                            <div class="step-description"> Persona engine</div>
+                            <div class="step-status">Waiting</div>
+                            <div class="step-progress">
+                                <div class="progress-bar"></div>
+                            </div>
+                        </div>
+                        <div class="step-checkmark">✓</div>
+                    </div>
+                    
+                    <div class="pipeline-connector">
+                        <div class="connector-line"></div>
+                        <div class="connector-dot"></div>
+                    </div>
+                    
+                    <div class="pipeline-step" data-stage="editor">
+                        <div class="step-icon-wrapper">
+                            <div class="step-icon">🔍</div>
+                            <div class="step-glow"></div>
+                        </div>
+                        <div class="step-content">
+                            <div class="step-name">Editor Agent</div>
+                            <div class="step-description">Final polish</div>
+                            <div class="step-status">Waiting</div>
+                            <div class="step-progress">
+                                <div class="progress-bar"></div>
+                            </div>
+                        </div>
+                        <div class="step-checkmark">✓</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Similarity Scores -->
+            <div class="similarity-section" style="display: none;">
+                <h2>Style Similarity</h2>
+                <div class="similarity-metrics">
+                    <div class="metric">
+                        <div class="metric-label">Combined Score</div>
+                        <div class="metric-value" id="combined-similarity">--</div>
+                        <div class="metric-bar">
+                            <div class="metric-fill" id="combined-fill"></div>
+                        </div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Embedding</div>
+                        <div class="metric-value" id="embedding-similarity">--</div>
+                        <div class="metric-bar">
+                            <div class="metric-fill" id="embedding-fill"></div>
+                        </div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">LLM</div>
+                        <div class="metric-value" id="llm-similarity">--</div>
+                        <div class="metric-bar">
+                            <div class="metric-fill" id="llm-fill"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="similarity-details">
+                    <p><strong>Author:</strong> <span id="author-name">--</span></p>
+                    <p><strong>Rewrite Attempts:</strong> <span id="rewrite-attempts">--</span></p>
+                </div>
+            </div>
+
+            <!-- Progress Messages -->
+            <div class="messages-section" style="display: none;">
+                <h3>Status</h3>
+                <div id="messages"></div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Blog Output -->
+        <div class="right-panel">
+            <div class="output-header">
+                <h2>Generated Blog</h2>
+                <button id="copy-btn" class="copy-btn" style="display: none;" title="Copy to clipboard">
+                    📋 Copy
+                </button>
+            </div>
+            
+            <div class="blog-output" id="blog-output">
+                <div class="placeholder">
+                    <div class="placeholder-icon">📄</div>
+                    <p>Your generated blog will appear here</p>
+                    <p class="placeholder-hint">Enter a topic and click "Generate Blog" to start</p>
+                </div>
+            </div>
+
+            <!-- Metadata -->
+            <div class="metadata-section" id="metadata" style="display: none;">
+                <h3>Blog Metadata</h3>
+                <div class="metadata-grid">
+                    <div class="metadata-item">
+                        <span class="metadata-label">Word Count:</span>
+                        <span class="metadata-value" id="word-count">--</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="metadata-label">Validated:</span>
+                        <span class="metadata-value" id="validated">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>
