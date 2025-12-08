@@ -71,7 +71,7 @@ The application will start on `http://localhost:8000`
 
 ## 🔧 Architecture Overview
 
-### Agent Pipeline
+### Agent Workflow
 ```
 User Input (Topic + RSS Feed)
     ↓
@@ -79,9 +79,9 @@ User Input (Topic + RSS Feed)
     ↓
 [WriterAgent] → Generates full blog content
     ↓
-[EditorAgent] → Polishes and refines
-    ↓
 [StyleRefinementPipeline] → Matches your writing style
+    ↓
+[EditorAgent] → Polishes and refines
     ↓
 Final Personalized Blog Post
 ```
