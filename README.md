@@ -1,42 +1,13 @@
-# ScribeTwin :  AI-Powered Personalized Blog Writer
-
-**Write blogs that sound like you, powered by advanced AI agents and style analysis.**
+# ScribeTwin : AI Blog writer that sounds like you.
 
 ![ScribeTwin](static/scribetwin.webp)
 
-ScribeTwin is an intelligent blog generation `toy application` that uses multi-agent AI systems to create content that matches your unique writing style. ScribeTwin orchestrates multiple specialized AI agents to produce high-quality, personalized blog posts.
+I started this project out of curiosity. I wanted to build a small, fun AI application to see an agent in action. The core idea is to teach the agent to copy my writing style. After a few days of fun, vibecodeed experimentation with multi-agent systems, I'm happy with the result!
 
-## Key Features
-
-### Multi-Agent Architecture
-- **OutlineAgent**: Creates structured, compelling blog outlines with engaging hooks and clear sections
-- **WriterAgent**: Transforms outlines into comprehensive, well-written blog content
-- **StyleRefinementPipeline**: Analyzes author writing style and iteratively refines content to match it
-- **EditorAgent**: Polishes and refines content for grammar, clarity, and flow
+This is ScribeTwin, a smart, personalized blog generator. It orchestrates multiple specialized AI agents to create content that seamlessly matches your unique voice.
 
 
-### Intelligent Style Matching
-- **Author Style Learning**: Analyzes RSS feeds to extract writing patterns, tone, and vocabulary
-- **Semantic Embeddings**: Uses sentence transformers to understand writing style at a deep level
-- **Iterative Refinement**: Continuously improves content similarity with your unique voice
-- **Multi-Modal Scoring**: Combines LLM-based and embedding-based similarity metrics for accurate matching
-
-### Real-Time WebSocket Communication
-- Live status updates as content is being generated
-- Stream agent responses and refinement progress
-- Interactive feedback loop between user and AI agents
-
-### RSS Feed Integration
-- Automatic fetching of author blogs from RSS feeds
-- Caching system for efficient style analysis
-- Support for custom RSS feed sources (e.g., Medium, personal blogs)
-
-### Web Interface
-- Clean, responsive UI for blog generation
-- Real-time progress tracking
-- Generated content preview and download
-
-## 🚀 Quick Start
+## Setup
 
 ### Prerequisites
 - Python 3.9+
@@ -51,13 +22,7 @@ ScribeTwin is an intelligent blog generation `toy application` that uses multi-a
 git clone https://github.com/saurabh2mishra/scribetwin.git
 cd scribetwin
 ```
-
-2. **Install dependencies using uv:**
-```bash
-uv sync
-```
-
-3. **Set up environment variables:**
+2. **Set up environment variables:**
 Create a `.env` file in the project root:
 ```env
 GOOGLE_API_KEY=your_google_api_key
@@ -66,7 +31,7 @@ GOOGLE_API_KEY=your_google_api_key
 
 4. **Run the application:**
 ```bash
-uv run python src/app.py
+source ./start.sh
 ```
 
 The application will start on `http://localhost:8000`
@@ -105,7 +70,7 @@ Final Personalized Blog Post
 ### Web Interface
 1. Navigate to `http://localhost:8000`
 2. Enter your blog topic
-3. (Optional) Provide a custom RSS feed URL for style matching
+3. Provide a custom RSS feed URL for style matching. For example I have used my personal MEDIUM BLOG feed.
 4. Click "Generate Blog"
 5. Watch real-time progress as agents work
 6. Download or copy your personalized blog post
