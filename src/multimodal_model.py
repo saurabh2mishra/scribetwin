@@ -2,8 +2,8 @@ import logging
 from typing import Dict, List, Any, Tuple, Optional
 
 from config import Config
-from src.style_embedder import AuthorStyleModel
-from src.style_llm import llm_similarity_score
+from style_embedder import AuthorStyleModel
+from style_llm import llm_similarity_score
 
 logger = logging.getLogger(__name__)
 

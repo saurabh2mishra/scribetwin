@@ -1,35 +1,37 @@
-# ScribeTwin - AI-Powered Personalized Blog Writer
+# ScribeTwin :  AI-Powered Personalized Blog Writer
 
 **Write blogs that sound like you, powered by advanced AI agents and style analysis.**
 
-ScribeTwin is an intelligent blog generation platform that uses multi-agent AI systems to create content that matches your unique writing style. From research and outlining to final polishing, ScribeTwin orchestrates multiple specialized AI agents to produce high-quality, personalized blog posts.
+![ScribeTwin](static/scribetwin.webp)
 
-## ✨ Key Features
+ScribeTwin is an intelligent blog generation `toy application` that uses multi-agent AI systems to create content that matches your unique writing style. ScribeTwin orchestrates multiple specialized AI agents to produce high-quality, personalized blog posts.
 
-### 🤖 Multi-Agent Architecture
+## Key Features
+
+### Multi-Agent Architecture
 - **OutlineAgent**: Creates structured, compelling blog outlines with engaging hooks and clear sections
 - **WriterAgent**: Transforms outlines into comprehensive, well-written blog content
 - **StyleRefinementPipeline**: Analyzes author writing style and iteratively refines content to match it
 - **EditorAgent**: Polishes and refines content for grammar, clarity, and flow
 
 
-### 🎯 Intelligent Style Matching
+### Intelligent Style Matching
 - **Author Style Learning**: Analyzes RSS feeds to extract writing patterns, tone, and vocabulary
 - **Semantic Embeddings**: Uses sentence transformers to understand writing style at a deep level
 - **Iterative Refinement**: Continuously improves content similarity with your unique voice
 - **Multi-Modal Scoring**: Combines LLM-based and embedding-based similarity metrics for accurate matching
 
-### 💬 Real-Time WebSocket Communication
+### Real-Time WebSocket Communication
 - Live status updates as content is being generated
 - Stream agent responses and refinement progress
 - Interactive feedback loop between user and AI agents
 
-### 📚 RSS Feed Integration
+### RSS Feed Integration
 - Automatic fetching of author blogs from RSS feeds
 - Caching system for efficient style analysis
 - Support for custom RSS feed sources (e.g., Medium, personal blogs)
 
-### 🌐 Web Interface
+### Web Interface
 - Clean, responsive UI for blog generation
 - Real-time progress tracking
 - Generated content preview and download
@@ -69,7 +71,6 @@ uv run python src/app.py
 
 The application will start on `http://localhost:8000`
 
-## 🔧 Architecture Overview
 
 ### Agent Workflow
 ```
@@ -112,8 +113,8 @@ Final Personalized Blog Post
 ### Via API
 ```python
 import asyncio
-from src.app import app
-from src.agents import build_pipeline_without_style
+from app import app
+from agents import build_pipeline_without_style
 
 async def generate_blog():
     config = Config()
@@ -129,7 +130,7 @@ This project is open source and available under the MIT License.
 
 ## 🤝 Contributing
 
-Fork the code and use it or add more features.
+Clone and Code. If you want to add more features, feel free to do it. 
 
 ---
 
