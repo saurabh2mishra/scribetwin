@@ -26,7 +26,9 @@ def build_outline_agent(config: Config) -> Agent:
     """Build outline generation agent."""
     return Agent(
         name="OutlineAgent",
-        model=Gemini(model=config.gemini_model, retry_options=build_retry_config(config)),
+        model=Gemini(
+            model=config.gemini_model, retry_options=build_retry_config(config)
+        ),
         instruction="""Create a clear, structured blog outline for the given topic.
 
 Include:
@@ -47,7 +49,9 @@ def build_writer_agent(config: Config) -> Agent:
     """Build blog writer agent."""
     return Agent(
         name="WriterAgent",
-        model=Gemini(model=config.gemini_model, retry_options=build_retry_config(config)),
+        model=Gemini(
+            model=config.gemini_model, retry_options=build_retry_config(config)
+        ),
         instruction=f"""Write a blog post following this outline: {{blog_outline}}
 
 Requirements:
@@ -69,7 +73,9 @@ def build_editor_agent(config: Config) -> Agent:
     """Build standalone editor agent."""
     return Agent(
         name="EditorAgent",
-        model=Gemini(model=config.gemini_model, retry_options=build_retry_config(config)),
+        model=Gemini(
+            model=config.gemini_model, retry_options=build_retry_config(config)
+        ),
         instruction="""Polish this blog post for grammar, flow, clarity, and readability.
 
 Preserve the author's voice and style. Return ONLY the polished blog post.""",
@@ -81,10 +87,9 @@ def build_pipeline_without_style(rss_api_url: str, config: Config) -> Sequential
     """Build pipeline with outline and writer only (no style agent)."""
     outline_agent = build_outline_agent(config)
     writer_agent = build_writer_agent(config)
-    
+
     return SequentialAgent(
-        name="BlogPipeline",
-        sub_agents=[outline_agent, writer_agent]
+        name="BlogPipeline", sub_agents=[outline_agent, writer_agent]
     )
 
 
@@ -93,7 +98,7 @@ class StyleRefinementAgent(Agent):
     Wrapper agent that calls the style refinement function.
     This integrates with SequentialAgent while giving us full control.
     """
-    
+
     _rss_api_url: str = PrivateAttr()
     _config: Config = PrivateAttr()
     _session: Any = PrivateAttr()
@@ -102,38 +107,40 @@ class StyleRefinementAgent(Agent):
         self._rss_api_url = rss_api_url
         self._config = config
         self._session = get_retry_session(config)
-        
+
         if not os.getenv("GOOGLE_API_KEY"):
             raise RuntimeError("GOOGLE_API_KEY environment variable must be set")
-        
-        logger.info(f"StyleRefinementAgent initialized (threshold: {config.similarity_threshold})")
-        
+
+        logger.info(
+            f"StyleRefinementAgent initialized (threshold: {config.similarity_threshold})"
+        )
+
         super().__init__(
             name="StyleRefinementAgent",
             model=None,
             instruction="",
-            output_key="styled_blog"
+            output_key="styled_blog",
         )
-    
+
     def __del__(self):
         """Cleanup resources."""
-        if hasattr(self, '_session') and self._session:
+        if hasattr(self, "_session") and self._session:
             self._session.close()
-    
+
     async def __call__(self, state: dict, **kwargs) -> dict:
         """Make the agent callable."""
         logger.info("StyleRefinementAgent.__call__() invoked")
         return await self.forward(state)
-    
+
     async def forward(self, state: dict) -> dict:
         """Forward method called by SequentialAgent."""
         logger.info("=" * 60)
         logger.info("StyleRefinementAgent.forward() CALLED")
         logger.info("=" * 60)
-        
+
         # Extract draft from state
         draft = state.get("blog_draft", "").strip()
-        
+
         # Fallback: check nested states
         if not draft:
             for key in ["WriterAgent", "writer_agent"]:
@@ -142,7 +149,7 @@ class StyleRefinementAgent(Agent):
                     if draft:
                         logger.info(f"Found draft in nested state: {key}")
                         break
-        
+
         if not draft:
             logger.error("No blog draft found in state")
             logger.debug(f"Available state keys: {list(state.keys())}")
@@ -151,26 +158,28 @@ class StyleRefinementAgent(Agent):
             state["rewrite_attempts"] = 0
             state["closest_author"] = None
             return state
-        
+
         logger.info("Calling style refinement pipeline...")
         result = await style_refinement_pipeline(
             draft=draft,
             rss_api_url=self._rss_api_url,
             config=self._config,
-            session=self._session
+            session=self._session,
         )
-        
-        logger.info(f"Style refinement returned: similarity={result.get('style_similarity', 0):.4f}")
+
+        logger.info(
+            f"Style refinement returned: similarity={result.get('style_similarity', 0):.4f}"
+        )
         state.update(result)
-        
+
         return state
-    
+
     async def run(self, *args, **kwargs):
         """Override run() as well in case that's what gets called."""
         logger.info("StyleRefinementAgent.run() CALLED")
         if args:
             state = args[0] if isinstance(args[0], dict) else {}
         else:
-            state = kwargs.get('state', {}) or kwargs.get('context', {})
-        
+            state = kwargs.get("state", {}) or kwargs.get("context", {})
+
         return await self.forward(state)

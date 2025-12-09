@@ -15,8 +15,7 @@ from google.adk.runners import InMemoryRunner
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -26,6 +25,7 @@ app = FastAPI(title="ScribeTwin - Personalized Blog Writer")
 
 # Serve static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 class BlogRequest(BaseModel):
     topic: str
@@ -61,20 +61,19 @@ async def read_root():
 @app.websocket("/ws/generate")
 async def websocket_generate(websocket: WebSocket):
     await manager.connect(websocket)
-    
+
     try:
         # Receive blog request
         data = await websocket.receive_json()
         topic = data.get("topic", "")
         rss_feed = data.get("rss_feed", Config.rss_feed)
-        
+
         if not topic:
-            await manager.send_status(websocket, {
-                "type": "error",
-                "message": "Topic is required"
-            })
+            await manager.send_status(
+                websocket, {"type": "error", "message": "Topic is required"}
+            )
             return
-        
+
         # Initialize config
         config = Config(
             similarity_threshold=0.65,
@@ -90,79 +89,87 @@ async def websocket_generate(websocket: WebSocket):
             embedding_similarity_weight=0.4,
             cache_llm_scores=True,
             max_output_tokens=1024,
-            enable_cache=True
+            enable_cache=True,
         )
-        
+
         # Send initial status
-        await manager.send_status(websocket, {
-            "type": "status",
-            "stage": "starting",
-            "message": "Initializing blog generation pipeline..."
-        })
-        
+        await manager.send_status(
+            websocket,
+            {
+                "type": "status",
+                "stage": "starting",
+                "message": "Initializing blog generation pipeline...",
+            },
+        )
+
         # Stage 1: Outline Agent
-        await manager.send_status(websocket, {
-            "type": "status",
-            "stage": "outline",
-            "message": "Creating blog outline..."
-        })
-        
+        await manager.send_status(
+            websocket,
+            {
+                "type": "status",
+                "stage": "outline",
+                "message": "Creating blog outline...",
+            },
+        )
+
         # Stage 2: Writer Agent
-        await manager.send_status(websocket, {
-            "type": "status",
-            "stage": "writer",
-            "message": "Writing blog draft..."
-        })
-        
+        await manager.send_status(
+            websocket,
+            {"type": "status", "stage": "writer", "message": "Writing blog draft..."},
+        )
+
         # Build and run pipeline
         pipeline_without_style = build_pipeline_without_style(rss_feed, config)
         runner = InMemoryRunner(agent=pipeline_without_style)
-        
+
         result = await runner.run_debug(f"Write a blog post about {topic}")
-        
+
         # Extract draft
         if isinstance(result, list):
             final_state = result[-1] if result else {}
         else:
             final_state = result
-        
+
         if hasattr(final_state, "model_dump"):
             final_state = final_state.model_dump()
         elif hasattr(final_state, "dict"):
             final_state = final_state.dict()
-        
+
         blog_draft = (
-            safe_get_nested(final_state, "actions", "state_delta", "blog_draft") or
-            safe_get_nested(final_state, "blog_draft") or
-            safe_get_nested(final_state, "WriterAgent", "blog_draft") or
-            ""
+            safe_get_nested(final_state, "actions", "state_delta", "blog_draft")
+            or safe_get_nested(final_state, "blog_draft")
+            or safe_get_nested(final_state, "WriterAgent", "blog_draft")
+            or ""
         )
-        
+
         if not blog_draft:
-            await manager.send_status(websocket, {
-                "type": "error",
-                "message": "Failed to generate blog draft"
-            })
+            await manager.send_status(
+                websocket, {"type": "error", "message": "Failed to generate blog draft"}
+            )
             return
-        
-        await manager.send_status(websocket, {
-            "type": "progress",
-            "draft_length": len(blog_draft),
-            "word_count": len(blog_draft.split())
-        })
-        
+
+        await manager.send_status(
+            websocket,
+            {
+                "type": "progress",
+                "draft_length": len(blog_draft),
+                "word_count": len(blog_draft.split()),
+            },
+        )
+
         # Stage 3: Style Agent
-        await manager.send_status(websocket, {
-            "type": "status",
-            "stage": "style",
-            "message": "Applying style refinement..."
-        })
-        
+        await manager.send_status(
+            websocket,
+            {
+                "type": "status",
+                "stage": "style",
+                "message": "Applying style refinement...",
+            },
+        )
+
         try:
             style_result = await style_refinement_pipeline(
-                draft=blog_draft,
-                rss_api_url=rss_feed,
-                config=config
+                draft=blog_draft, rss_api_url=rss_feed, config=config
             )
         except Exception as e:
             logger.error(f"Style refinement failed: {e}")
@@ -172,81 +179,86 @@ async def websocket_generate(websocket: WebSocket):
                 "rewrite_attempts": 0,
                 "closest_author": "unknown",
                 "error": str(e),
-                "success": False
+                "success": False,
             }
-        
+
         styled_blog = style_result.get("styled_blog", blog_draft)
         style_similarity = style_result.get("style_similarity", 0.0)
         rewrite_attempts = style_result.get("rewrite_attempts", 0)
         closest_author = style_result.get("closest_author", "unknown")
         embedding_sim = style_result.get("embedding_similarity")
         llm_sim = style_result.get("llm_similarity")
-        
-        await manager.send_status(websocket, {
-            "type": "similarity",
-            "combined_similarity": style_similarity,
-            "embedding_similarity": embedding_sim,
-            "llm_similarity": llm_sim,
-            "rewrite_attempts": rewrite_attempts,
-            "author": closest_author
-        })
-        
+
+        await manager.send_status(
+            websocket,
+            {
+                "type": "similarity",
+                "combined_similarity": style_similarity,
+                "embedding_similarity": embedding_sim,
+                "llm_similarity": llm_sim,
+                "rewrite_attempts": rewrite_attempts,
+                "author": closest_author,
+            },
+        )
+
         # Stage 4: Editor Agent
-        await manager.send_status(websocket, {
-            "type": "status",
-            "stage": "editor",
-            "message": "Polishing final blog..."
-        })
-        
+        await manager.send_status(
+            websocket,
+            {"type": "status", "stage": "editor", "message": "Polishing final blog..."},
+        )
+
         editor_agent = build_editor_agent(config)
         editor_runner = InMemoryRunner(agent=editor_agent)
-        
+
         editor_result = await editor_runner.run_debug(
             f"Edit and polish this blog post:\n\n{styled_blog}"
         )
-        
+
         # Extract final blog
         if isinstance(editor_result, list):
             editor_state = editor_result[-1] if editor_result else {}
         else:
             editor_state = editor_result
-        
+
         if hasattr(editor_state, "model_dump"):
             editor_state = editor_state.model_dump()
         elif hasattr(editor_state, "dict"):
             editor_state = editor_state.dict()
-        
+
         blog_content = (
-            safe_get_nested(editor_state, "actions", "state_delta", "final_blog") or
-            safe_get_nested(editor_state, "final_blog") or
-            safe_get_nested(editor_state, "content", "parts", 0, "text") or
-            styled_blog
+            safe_get_nested(editor_state, "actions", "state_delta", "final_blog")
+            or safe_get_nested(editor_state, "final_blog")
+            or safe_get_nested(editor_state, "content", "parts", 0, "text")
+            or styled_blog
         )
-        
+
         # Validate and send final result
         is_valid, error_msg = validate_content(blog_content, config)
-        
-        await manager.send_status(websocket, {
-            "type": "complete",
-            "stage": "complete",
-            "message": "Blog generation complete!",
-            "blog": blog_content,
-            "metadata": {
-                "author": closest_author,
-                "combined_similarity": style_similarity,
-                "embedding_similarity": embedding_sim,
-                "llm_similarity": llm_sim,
-                "rewrite_attempts": rewrite_attempts,
-                "word_count": len(blog_content.split()),
-                "validated": is_valid
-            }
-        })
-        
+
+        await manager.send_status(
+            websocket,
+            {
+                "type": "complete",
+                "stage": "complete",
+                "message": "Blog generation complete!",
+                "blog": blog_content,
+                "metadata": {
+                    "author": closest_author,
+                    "combined_similarity": style_similarity,
+                    "embedding_similarity": embedding_sim,
+                    "llm_similarity": llm_sim,
+                    "rewrite_attempts": rewrite_attempts,
+                    "word_count": len(blog_content.split()),
+                    "validated": is_valid,
+                },
+            },
+        )
+
         # Save to file
         output_dir = Path("blogs")
         output_dir.mkdir(parents=True, exist_ok=True)
         output_file = output_dir / "final_blog.md"
-        
+
         with open(output_file, "w", encoding="utf-8") as f:
             f.write("---\n")
             f.write(f"author: {closest_author}\n")
@@ -260,16 +272,13 @@ async def websocket_generate(websocket: WebSocket):
             f.write(f"validated: {is_valid}\n")
             f.write("---\n\n")
             f.write(blog_content)
-        
+
     except WebSocketDisconnect:
         logger.info("WebSocket disconnected")
     except Exception as e:
         logger.error(f"Error in websocket: {e}", exc_info=True)
         try:
-            await manager.send_status(websocket, {
-                "type": "error",
-                "message": str(e)
-            })
+            await manager.send_status(websocket, {"type": "error", "message": str(e)})
         except:
             pass
     finally:
@@ -278,4 +287,5 @@ async def websocket_generate(websocket: WebSocket):
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -17,7 +17,7 @@ def get_retry_session(config: Config) -> requests.Session:
         total=config.retry_attempts,
         backoff_factor=config.initial_delay,
         status_forcelist=config.retry_status_codes,
-        allowed_methods=["GET", "POST"]
+        allowed_methods=["GET", "POST"],
     )
     adapter = HTTPAdapter(max_retries=retry_strategy)
     session.mount("http://", adapter)
@@ -29,7 +29,7 @@ def clean_html(html_text: str) -> str:
     """Clean HTML and extract text content safely."""
     if not html_text:
         return ""
-    
+
     try:
         soup = BeautifulSoup(html_text, "html.parser")
         for tag in soup(["script", "style", "meta", "link", "noscript"]):
@@ -45,43 +45,47 @@ def chunk_text(text: str, config: Config) -> List[str]:
     """Split text into overlapping chunks for embedding."""
     if not text:
         return []
-    
+
     words = text.split()
     if len(words) <= config.chunk_size:
         return [text]
-    
+
     chunks = []
     i = 0
     while i < len(words):
         chunk_words = words[i : i + config.chunk_size]
         chunks.append(" ".join(chunk_words))
         i += config.chunk_size - config.chunk_overlap
-    
+
     logger.debug(f"Created {len(chunks)} chunks from {len(words)} words")
     return chunks
 
 
 def validate_content(
-    text: str, 
-    config: Config,
-    check_word_count: bool = True
+    text: str, config: Config, check_word_count: bool = True
 ) -> Tuple[bool, str]:
     """Validate blog content quality."""
     if not text or not text.strip():
         return False, "Content is empty"
-    
+
     word_count = len(text.split())
-    
+
     if check_word_count:
         if word_count < config.min_word_count:
-            return False, f"Content too short: {word_count} words (min: {config.min_word_count})"
+            return (
+                False,
+                f"Content too short: {word_count} words (min: {config.min_word_count})",
+            )
         if word_count > config.max_word_count:
-            return False, f"Content too long: {word_count} words (max: {config.max_word_count})"
-    
+            return (
+                False,
+                f"Content too long: {word_count} words (max: {config.max_word_count})",
+            )
+
     unique_words = len(set(text.lower().split()))
     if unique_words < word_count * 0.3:
         return False, "Content appears repetitive"
-    
+
     return True, ""
 
 
@@ -91,12 +95,12 @@ def safe_get_nested(data: Any, *keys: str, default: Any = None) -> Any:
     for key in keys:
         if current is None:
             return default
-        
+
         if isinstance(current, dict):
             current = current.get(key)
         elif hasattr(current, key):
             current = getattr(current, key)
         else:
             return default
-    
+
     return current if current is not None else default
