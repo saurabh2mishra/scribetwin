@@ -101,7 +101,7 @@ async def style_refinement_pipeline(
                 "styled_blog": draft,
                 "style_similarity": initial_emb_score,
                 "embedding_similarity": initial_emb_score,
-                "llm_similarity": None,
+                "llm_similarity": 0.0,
                 "rewrite_attempts": 0,
                 "closest_author": author_id,
                 "error": "No style examples available",
@@ -113,16 +113,22 @@ async def style_refinement_pipeline(
         initial_similarity = await style_model.compute_similarity(
             draft, author_id, style_examples
         )
-        
+
         initial_combined_score = initial_similarity["combined_score"]
         initial_emb_sim = initial_similarity["embedding_score"]
         initial_llm_sim = initial_similarity["llm_score"]
 
+        emb_score_str = (
+            f"{initial_emb_sim:.4f}" if initial_emb_sim is not None else None
+        )
+        llm_score_str = (
+            f"{initial_llm_sim:.4f}" if initial_llm_sim is not None else None
+        )
         logger.info(
             f"Matched author: '{author_id}' "
-            f"(combined: {initial_combined_score:.4f}, "
-            f"embedding: {initial_emb_sim:.4f if initial_emb_sim else 'N/A'}, "
-            f"llm: {initial_llm_sim:.4f if initial_llm_sim else 'N/A'})"
+            f"(combined: {initial_combined_score}, "
+            f"embedding: {emb_score_str}, "
+            f"llm: {llm_score_str})"
         )
 
         # Extract and log style features
@@ -189,18 +195,19 @@ async def style_refinement_pipeline(
                 new_similarity = await style_model.compute_similarity(
                     rewritten, author_id, style_examples
                 )
-                
+
                 new_score = new_similarity["combined_score"]
                 new_emb_sim = new_similarity["embedding_score"]
                 new_llm_sim = new_similarity["llm_score"]
-                
-                improvement = new_score - current_score
 
+                new_emb_str = f"{new_emb_sim:.4f}" if new_emb_sim is not None else "N/A"
+                new_llm_str = f"{new_llm_sim:.4f}" if new_llm_sim is not None else "N/A"
+                improvement = new_score - current_score
                 logger.info(
                     f"Rewrite {attempts + 1}: "
                     f"combined {current_score:.4f} -> {new_score:.4f} (Δ {improvement:+.4f}), "
-                    f"embedding: {new_emb_sim:.4f if new_emb_sim else 'N/A'}, "
-                    f"llm: {new_llm_sim:.4f if new_llm_sim else 'N/A'}"
+                    f"embedding: {new_emb_str}, "
+                    f"llm: {new_llm_str}"
                 )
 
                 # Check for convergence
@@ -224,37 +231,41 @@ async def style_refinement_pipeline(
                 break
 
         # Final validation
-        is_valid, error_msg = validate_content(current_text, config)
-        if not is_valid:
-            logger.warning(f"Final content validation failed: {error_msg}")
-
+        final_emb_str = (
+            f"{current_emb_sim:.4f}" if current_emb_sim is not None else "0.0"
+        )
+        final_llm_str = (
+            f"{current_llm_sim:.4f}" if current_llm_sim is not None else "0.0"
+        )
         logger.info(
             f"Style refinement complete: "
             f"combined {initial_combined_score:.4f} -> {current_score:.4f}, "
-            f"embedding: {current_emb_sim:.4f if current_emb_sim else 'N/A'}, "
-            f"llm: {current_llm_sim:.4f if current_llm_sim else 'N/A'} "
+            f"embedding: {final_emb_str}, "
+            f"llm: {final_llm_str} "
             f"after {attempts} attempts"
         )
 
-        # Build result
         result = {
             "styled_blog": current_text,
             "style_similarity": float(current_score),
-            "embedding_similarity": float(current_emb_sim) if current_emb_sim is not None else None,
-            "llm_similarity": float(current_llm_sim) if current_llm_sim is not None else None,
+            "embedding_similarity": (
+                float(current_emb_sim) if current_emb_sim is not None else 0.0
+            ),
+            "llm_similarity": (
+                float(current_llm_sim) if current_llm_sim is not None else 0.0
+            ),
             "rewrite_attempts": attempts,
             "closest_author": author_id,
             "initial_similarity": float(initial_combined_score),
             "improvement_history": [float(s) for s in improvement_history],
             "success": True,
         }
+        logger.warning(
+            f"Failed to reach similarity threshold "
+            f"({current_score:.4f} < {config.similarity_threshold})"
+        )
 
-        if current_score < config.similarity_threshold:
-            logger.warning(
-                f"Failed to reach similarity threshold "
-                f"({current_score:.4f} < {config.similarity_threshold})"
-            )
-            result["warning"] = "Similarity threshold not reached"
+        result["warning"] = "Similarity threshold not reached"
 
         return result
 
@@ -263,8 +274,8 @@ async def style_refinement_pipeline(
         return {
             "styled_blog": draft,
             "style_similarity": 0.0,
-            "embedding_similarity": None,
-            "llm_similarity": None,
+            "embedding_similarity": 0.0,
+            "llm_similarity": 0.0,
             "rewrite_attempts": 0,
             "closest_author": None,
             "error": f"{type(e).__name__}: {str(e)}",

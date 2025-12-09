@@ -13,6 +13,9 @@ const messagesSection = document.querySelector('.messages-section');
 const similaritySection = document.querySelector('.similarity-section');
 const metadataSection = document.getElementById('metadata');
 
+generateBtn.addEventListener('click', startGeneration);
+copyBtn.addEventListener('click', copyToClipboard);
+
 // Pipeline steps
 const pipelineSteps = {
     outline: document.querySelector('[data-stage="outline"]'),
@@ -71,7 +74,7 @@ function startGeneration() {
 function connectWebSocket(topic, rssFeed) {
     const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
     const wsUrl = `${protocol}${window.location.host}/ws/generate`;
-    const ws = new WebSocket(wsUrl);
+    ws = new WebSocket(wsUrl);
     
     ws.onopen = () => {
         console.log('WebSocket connected');
@@ -96,6 +99,11 @@ function connectWebSocket(topic, rssFeed) {
             resetGenerationState();
         }
     };
+}
+
+function safeScore(value) {
+    const num = Number(value);
+    return Number.isFinite(num) ? num.toFixed(2) : '--';
 }
 
 function handleMessage(data) {
@@ -179,18 +187,15 @@ function updateSimilarityScores(data) {
     const combined = data.combined_similarity;
     const embedding = data.embedding_similarity;
     const llm = data.llm_similarity;
-    
-    // Update values
-    document.getElementById('combined-similarity').textContent = 
-        combined ? combined.toFixed(4) : '--';
-    // document.getElementById('embedding-similarity').textContent = 
-    //     embedding ? embedding.toFixed(4) : '--';
-    // document.getElementById('llm-similarity').textContent = 
-    //     llm ? llm.toFixed(4) : '--';
-    document.getElementById('author-name').textContent = 
-        data.author || 'Unknown';
-    document.getElementById('rewrite-attempts').textContent = 
-        data.rewrite_attempts || 0;
+
+    // Display text safely
+    document.getElementById('combined-similarity').textContent = safeScore(combined);
+    document.getElementById('embedding-similarity').textContent = safeScore(embedding);
+    document.getElementById('llm-similarity').textContent = safeScore(llm);
+
+    document.getElementById('author-name').textContent = data.author || 'Unknown';
+    document.getElementById('rewrite-attempts').textContent = data.rewrite_attempts || 0;
+
     
     // Animate progress bars
     setTimeout(() => {
@@ -318,7 +323,7 @@ function resetUI() {
             <p>Generating your blog...</p>
         </div>
     `;
-    
+
     // Hide sections
     copyBtn.style.display = 'none';
     metadataSection.style.display = 'none';

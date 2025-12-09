@@ -2,8 +2,8 @@ import logging
 from typing import Dict, List, Any, Tuple, Optional
 
 from config import Config
-from embedding_model import AuthorStyleModel
-from llm_services import llm_similarity_score
+from src.style_embedder import AuthorStyleModel
+from src.style_llm import llm_similarity_score
 
 logger = logging.getLogger(__name__)
 
@@ -77,11 +77,21 @@ class MultiModalStyleModel:
             logger.error("No similarity scores available!")
             results["combined_score"] = 0.0
 
+        embedding_str = (
+            f"{results['embedding_score']:.4f}"
+            if results["embedding_score"] is not None
+            else "None"
+        )
+        llm_str = (
+            f"{results['llm_score']:.4f}"
+            if results["llm_score"] is not None
+            else "None"
+        )
         logger.info(
             f"Multi-modal similarity: "
-            f"embedding={results['embedding_score']:.4f if results['embedding_score'] else 'N/A'}, "
-            f"llm={results['llm_score']:.4f if results['llm_score'] else 'N/A'}, "
-            f"combined={results['combined_score']:.4f}"
+            f"embedding={embedding_str}, "
+            f"llm={llm_str}, "
+            f"combined={results['combined_score']}"
         )
 
         return results

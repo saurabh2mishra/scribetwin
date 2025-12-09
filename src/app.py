@@ -176,6 +176,8 @@ async def websocket_generate(websocket: WebSocket):
             style_result = {
                 "styled_blog": blog_draft,
                 "style_similarity": 0.0,
+                "embedding_similarity": None,
+                "llm_similarity": None,
                 "rewrite_attempts": 0,
                 "closest_author": "unknown",
                 "error": str(e),
@@ -189,13 +191,24 @@ async def websocket_generate(websocket: WebSocket):
         embedding_sim = style_result.get("embedding_similarity")
         llm_sim = style_result.get("llm_similarity")
 
+        logger.info(
+            f"Style result - Combined: {style_similarity if style_similarity is not None else 'N/A'}, "
+            f"Embedding: {embedding_sim if embedding_sim is not None else 'N/A'}, "
+            f"LLM: {llm_sim if llm_sim is not None else 'N/A'}, "
+            f"Author: {closest_author}, Attempts: {rewrite_attempts}"
+        )
+
         await manager.send_status(
             websocket,
             {
                 "type": "similarity",
-                "combined_similarity": style_similarity,
-                "embedding_similarity": embedding_sim,
-                "llm_similarity": llm_sim,
+                "combined_similarity": (
+                    float(style_similarity) if style_similarity is not None else 0.0
+                ),
+                "embedding_similarity": (
+                    float(embedding_sim) if embedding_sim is not None else None
+                ),
+                "llm_similarity": float(llm_sim) if llm_sim is not None else None,
                 "rewrite_attempts": rewrite_attempts,
                 "author": closest_author,
             },
@@ -244,34 +257,19 @@ async def websocket_generate(websocket: WebSocket):
                 "blog": blog_content,
                 "metadata": {
                     "author": closest_author,
-                    "combined_similarity": style_similarity,
-                    "embedding_similarity": embedding_sim,
-                    "llm_similarity": llm_sim,
+                    "combined_similarity": (
+                        float(style_similarity) if style_similarity is not None else 0.0
+                    ),
+                    "embedding_similarity": (
+                        float(embedding_sim) if embedding_sim is not None else None
+                    ),
+                    "llm_similarity": float(llm_sim) if llm_sim is not None else None,
                     "rewrite_attempts": rewrite_attempts,
                     "word_count": len(blog_content.split()),
                     "validated": is_valid,
                 },
             },
         )
-
-        # Save to file
-        output_dir = Path("blogs")
-        output_dir.mkdir(parents=True, exist_ok=True)
-        output_file = output_dir / "final_blog.md"
-
-        with open(output_file, "w", encoding="utf-8") as f:
-            f.write("---\n")
-            f.write(f"author: {closest_author}\n")
-            f.write(f"style_similarity_combined: {style_similarity:.4f}\n")
-            if embedding_sim is not None:
-                f.write(f"style_similarity_embedding: {embedding_sim:.4f}\n")
-            if llm_sim is not None:
-                f.write(f"style_similarity_llm: {llm_sim:.4f}\n")
-            f.write(f"rewrite_attempts: {rewrite_attempts}\n")
-            f.write(f"word_count: {len(blog_content.split())}\n")
-            f.write(f"validated: {is_valid}\n")
-            f.write("---\n\n")
-            f.write(blog_content)
 
     except WebSocketDisconnect:
         logger.info("WebSocket disconnected")
