@@ -1,6 +1,6 @@
 # ScribeTwin : AI Blog writer that sounds like you.
 
-![ScribeTwin](static/scribetwin.webp)
+![ScribeTwin](static/assets/scribetwin.webp)
 
 I started this project to firm up my understanding and put agents into action. I wanted to keep it small, fun but challenging. The core idea is to teach the agent to copy my writing style. After a few days of fun, vibecodeed experimentation with multi-agent systems, I'm happy with the outcome.
 
