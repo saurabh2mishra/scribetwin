@@ -2,10 +2,9 @@
 
 ![ScribeTwin](static/scribetwin.webp)
 
-I started this project out of curiosity. I wanted to build a small, fun AI application to see an agent in action. The core idea is to teach the agent to copy my writing style. After a few days of fun, vibecodeed experimentation with multi-agent systems, I'm happy with the result!
+I started this project to firm up my understanding and put agents into action. I wanted to keep it small, fun but challenging. The core idea is to teach the agent to copy my writing style. After a few days of fun, vibecodeed experimentation with multi-agent systems, I'm happy with the outcome.
 
 This is ScribeTwin, a smart, personalized blog generator. It orchestrates multiple specialized AI agents to create content that seamlessly matches your unique voice.
-
 
 ## Setup
 
@@ -75,28 +74,15 @@ Final Personalized Blog Post
 5. Watch real-time progress as agents work
 6. Download or copy your personalized blog post
 
-### Via API
-```python
-import asyncio
-from app import app
-from agents import build_pipeline_without_style
+### Note 
+I intentionally didn't add a `publish` tool to release it on any platform (Medium, Ghost, WordPress, etc.). I wanted to end the project here.
 
-async def generate_blog():
-    config = Config()
-    pipeline = build_pipeline_without_style(
-        rss_api_url=config.rss_feed,
-        config=config
-    )
-    # Execute pipeline...
-```
 ## 📝 License
 
 This project is open source and available under the MIT License.
 
 ## 🤝 Contributing
 
-Clone and Code. If you want to add more features, feel free to do it. 
+Clone and Code (Vibe). And, ofcourse extend, add more features, write tests and do whatever else you like.
 
 ---
-
-**Made with ❤️ for writers who want their AI to match their voice.**
