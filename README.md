@@ -35,6 +35,10 @@ source ./start.sh
 
 The application will start on `http://localhost:8000`
 
+### Demo
+
+![Demo](static/assets/demo.gif)
+
 
 ### Agent Workflow
 ```
