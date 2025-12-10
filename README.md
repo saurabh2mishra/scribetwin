@@ -83,6 +83,6 @@ This project is open source and available under the MIT License.
 
 ## 🤝 Contributing
 
-Clone and Code (Vibe). And, ofcourse extend, add more features, write tests and do whatever else you like.
+Clone and Code (Vibe). And, ofcourse extend, add more features, write tests, better prompts and do whatever else you like.
 
 ---
