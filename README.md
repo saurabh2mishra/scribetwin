@@ -56,6 +56,9 @@ Final Personalized Blog Post
 ```
 
 ### Style Matching Process
+
+**Note** - Currently, it only supports RSS feeds authored by the writer. For example, I provided my Medium RSS feed of previous blogs to fetch all the content and then score the similarity against AI-generated content.
+
 1. **Style Extraction**: Analyzes author blogs to extract writing characteristics
    - Sentence structure and length
    - Vocabulary preferences
