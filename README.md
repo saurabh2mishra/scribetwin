@@ -2,7 +2,7 @@
 
 ![ScribeTwin](static/assets/scribetwin.webp)
 
-I started this project to firm up my understanding and put agents into action. I wanted to keep it small, fun but challenging. The core idea is to teach the agent to copy my writing style. After a few days of fun, vibecodeed experimentation with multi-agent systems, I'm happy with the outcome.
+I started this project to firm up my understanding and put agents into action. I wanted to keep it small, fun but challenging. The core idea is to teach the agent to copy my writing style. After a few days of fun, and different experimentations with multi-agent systems, I'm happy with the outcome.
 
 This is ScribeTwin, a smart, personalized blog generator. It orchestrates multiple specialized AI agents to create content that seamlessly matches your unique voice.
 
